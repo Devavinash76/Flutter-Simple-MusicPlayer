@@ -1,0 +1,162 @@
+import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
+audioplayers: ^5.2.1
+class MusicPlayer extends StatefulWidget {
+  @override
+  _MusicPlayerState createState() => _MusicPlayerState();
+}
+
+class _MusicPlayerState extends State<MusicPlayer> {
+  String currentTitle = "";
+  String currentSubtitle = "";
+  String currentImage = "";
+  String currentSong = "";
+  bool isPlaying = false;
+
+  AudioPlayer audioPlayer = AudioPlayer();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Listen for audio player position changes
+    audioPlayer.onAudioPositionChanged.listen((Duration position) {
+      // Update UI or perform any tasks based on the current position
+    });
+
+    // Listen for audio player completion
+    audioPlayer.onPlayerCompletion.listen((event) {
+      setState(() {
+        isPlaying = false;
+      });
+    });
+  }
+
+  void playAudioFromUrl(String url) {
+    audioPlayer.play(url);
+    setState(() {
+      isPlaying = true;
+    });
+  }
+
+  void stopAudio() {
+    audioPlayer.stop();
+    setState(() {
+      isPlaying = false;
+    });
+  }
+
+  void pauseAudio() {
+    audioPlayer.pause();
+    setState(() {
+      isPlaying = false;
+    });
+  }
+
+  void seekAudio(Duration duration) {
+    audioPlayer.seek(duration);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          // Your ListView.builder
+          // ...
+
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x55212121),
+                  blurRadius: 8.0,
+                )
+              ],
+            ),
+            child: Column(
+              children: [
+                // Your existing Slider
+                Slider.adaptive(
+                  value: audioPlayer.position.inSeconds.toDouble(),
+                  min: 0.0,
+                  max: audioPlayer.duration.inSeconds.toDouble(),
+                  onChanged: (value) {
+                    // Update the slider position
+                    setState(() {
+                      audioPlayer.seek(Duration(seconds: value.toInt()));
+                    });
+                  },
+                ),
+
+                // Your existing Row
+                Row(
+                  children: [
+                    // ... Your existing content
+
+                    Visibility(
+                      visible: !isPlaying,
+                      child: IconButton(
+                        onPressed: () {
+                          // Stop any currently playing song
+                          stopAudio();
+
+                          // Play the current song
+                          playAudioFromUrl(currentSong);
+                        },
+                        icon: Image.asset('assets/play.png'),
+                      ),
+                    ),
+
+                    Visibility(
+                      visible: isPlaying,
+                      child: IconButton(
+                        onPressed: () {
+                          // Pause the currently playing song
+                          pauseAudio();
+                        },
+                        icon: Image.asset(
+                          'assets/pause.png',
+                          color: Colors.green,
+                        ),
+                      ),
+                    ),
+
+                    // ... Your existing content
+                  ],
+                ),
+
+                // Your existing Container widgets
+                // ...
+
+                // Example of seeking 10 seconds forward
+                IconButton(
+                  onPressed: () {
+                    seekAudio(
+                      Duration(
+                        seconds: audioPlayer.position.inSeconds + 10,
+                      ),
+                    );
+                  },
+                  icon: Icon(Icons.forward),
+                ),
+                // Example of seeking 10 seconds backward
+                IconButton(
+                  onPressed: () {
+                    seekAudio(
+                      Duration(
+                        seconds: audioPlayer.position.inSeconds - 10,
+                      ),
+                    );
+                  },
+                  icon: Icon(Icons.replay_10),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
